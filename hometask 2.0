@@ -1,0 +1,199 @@
+import statistics
+
+class Student:
+  def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
+        self.finished_courses = []
+        self.courses_in_progress = []
+        self.grades = {}
+
+#функция собирает оценки лекторов от студентов
+  def feedback(self, lecturer, course, grade):
+      if isinstance (lecturer, Lecturer) and course in self.courses_in_progress and course in lecturer.course_attached:
+        if course in lecturer.student_feedback:
+          lecturer.student_feedback += [grade]
+        else:
+          lecturer.student_feedback = [grade]
+      else:
+        print('Что-то не так1')
+
+#функция считает среднюю оценку студента
+  def average_rating(self, grade):
+        av_rate = []
+        courses = []
+        for key, value in self.grades.items():
+            av_rate += value
+            if key not in courses:
+              courses.append(key)
+            else:
+              courses += key
+        print (statistics.mean(av_rate))
+        if grade == 'grade':
+          print(statistics.mean(av_rate))
+        else:
+          print('Что-то не так2')
+
+#вывод данных о студенте для задания 3
+  def __str__(self):
+    grade = 'grade'
+    list_courses_with_grade = 'list courses'
+    print(f"Имя: {self.name}") 
+    print(f"Фамилия: {self.surname}")
+    print(f"Средняя оценка за домашние задания: {self.average_rating(grade)}")
+    print(f"Курсы в процессе изучения: {', '.join(self.average_rating(list_courses_with_grade))}")
+    print(f"Завершенные курсы: {', '.join(self.finished_courses)}")
+
+
+#сравниваем лекторов по средней оценке и студентов по средней оценке
+  def __lt__(self, other):
+    grade = 'grade'
+    if not isinstance(other, Lecturer):
+      print('He is not a Lecturer')
+      return
+    return self.average_rating(grade) < other.average_feedback()
+   
+  def __gt__(self, other):
+    grade = 'grade'
+    if not isinstance(other, Lecturer):
+      print('He is not a Lecturer')
+      return
+    return self.average_rating(grade) > other.average_feedback()        
+
+
+#класс всех преподавателей
+class Mentor:
+  def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
+        self.course_attached = []
+
+#класс лекторов
+class Lecturer(Mentor):
+  def __init__(self, name, surname):
+    super().__init__(name, surname)
+    self.student_feedback = {}
+
+#расчет средней оценки по отзывам студентов
+  def average_feedback(self):
+    av_fb_list = []
+    for key, value in self.student_feedback.items():
+      av_fb_list += value
+    print(statistics.mean(av_fb_list))
+
+#вывод данных о лекторе
+  def __str__(self):
+    print(f"Имя:  {self.name}")
+    print(f"Фамилия: {self.surname}")
+    print(f"Средняя оценка за лекции: {self.average_feedback()}")
+
+#класс проверяющих
+class Reviewer(Mentor):
+  def __init__(self, name, surname):
+    super().__init__(name, surname)
+
+#вывод данных о проверяющем
+  def __str__(self):
+    print(f"Имя: {self.name}")
+    print(f"Фамилия: {self.surname}")
+
+#ревьюер ставит оценки студентам
+  def grade_homework(self, student, course, grade):
+    if isinstance (student, Student) and course in self.course_attached and course in student.courses_in_progress:
+      if course in student.grades:
+        student.grades[course] += [grade]
+      else:
+        student.grades[course] = [grade]
+    else:
+      print('Что-то не так3')
+
+
+#средние оценки студентов на каком-то курсе
+def average_rating_students(course, *students):
+  list_s = []
+  for student in students:
+    if student.grades.get(course):
+      list_s.extend(student.grades[course])
+  print(statistics.mean(list_s))
+
+#средние оценки лекторов на каком-то курсе
+def average_feedback_lecturers(course, *lecturers):
+  list_l = []
+  for lecturer in lecturers:
+    if lecturer.student_feedback.get(course):
+      list_l.extend(lecturer.student_feedback[course])
+  print(statistics.mean(list_l))
+
+
+#наши студенты
+student_1 = Student('Alice', 'Abad')
+student_2 = Student('Bob', 'Backer')
+
+#что изучают
+student_1.courses_in_progress += ['Python']
+student_2.courses_in_progress += ['Python']
+student_1.courses_in_progress += ['Deduction']
+student_2.courses_in_progress += ['Deduction']
+
+#что закончили
+student_1.finished_courses += ['Digital start']
+student_2.finished_courses += ['Digital start']
+
+#наши лекторы
+lecturer_1 = Lecturer('Sherlock', 'Holmes')
+lecturer_2 = Lecturer('John', 'Watson')
+
+#что ведут лекторы
+lecturer_1.course_attached += ['Python']
+lecturer_1.course_attached += ['Deduction']
+lecturer_2.course_attached += ['Python']
+lecturer_2.course_attached += ['Deduction']
+
+#оценки студентов для лекторов
+student_1.feedback(lecturer_1, "Python", 9)
+student_1.feedback(lecturer_2, "Python", 9)
+student_1.feedback(lecturer_1, "Deduction", 10)
+student_1.feedback(lecturer_2, "Deduction", 9)
+student_2.feedback(lecturer_1, "Python", 9)
+student_2.feedback(lecturer_2, "Python", 10)
+student_2.feedback(lecturer_1, "Deduction", 10)
+student_2.feedback(lecturer_2, "Deduction", 10)
+
+#наши проверяющие
+reviewer_1 = Reviewer('Camilla', 'Cabello')
+reviewer_2 = Reviewer('Dan', 'Django')
+
+#ревьюеры проверяют курсы
+reviewer_1.course_attached += ['Python']
+reviewer_1.course_attached += ['Deduction']
+reviewer_1.course_attached += ['Digital start']
+reviewer_2.course_attached += ['Python']
+reviewer_2.course_attached += ['Deduction']
+
+#ревьюеры ставят оценки
+reviewer_1.grade_homework(student_1, 'Python', 9)
+reviewer_1.grade_homework(student_1, 'Python', 8)
+reviewer_2.grade_homework(student_2, 'Python', 10)
+reviewer_2.grade_homework(student_2, 'Python', 9)
+reviewer_1.grade_homework(student_1, 'Deduction', 10)
+reviewer_1.grade_homework(student_1, 'Deduction', 10)
+reviewer_2.grade_homework(student_2, 'Deduction', 9)
+reviewer_2.grade_homework(student_2, 'Deduction', 8)
+
+
+# #задание 2
+print(f" {student_1.name} получил(а) следующие оценки: {student_1.grades}")
+print(f" {lecturer_1.name} получил оценки {lecturer_1.student_feedback}")
+
+#Задание_3
+print(reviewer_1)
+print(lecturer_1)
+print(student_1)
+
+print(student_1 < lecturer_1)
+print(student_1 > lecturer_1)
+
+# #Задание_4
+course = "Deduction"
+print(average_rating_students(course, student_1, student_2))
+print(average_feedback_lecturers(course, lecturer_1, lecturer_2))
